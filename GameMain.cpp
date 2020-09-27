@@ -20,32 +20,33 @@ int main() {
 	fillDeck(liveCards);
 
 	int cardIndex = 0;
-	int currentCard = 0;
+	int takenCard = 0;
 	int score = 0;
 	char userInput;
 
 	while (cardIndex<16) {
-		//Flips over a new card
+		//Prepares the deck
 		int newCard = deck.at(cardIndex);
+		int tempSize = deadCards.size();
+		cardIndex++;
 
 		//Prints current deck
+		sortDeck(liveCards);
+		sortDeck(deadCards);
 		cout << "Current Score: " << score << endl;
 		cout << "Dead Cards: " << printCards(deadCards).str() << endl;
 		cout << "Live Cards: " << printCards(liveCards).str() << endl;
 		cout << "Next Card: " << newCard;
 
-		//Skips the new card if is less than the current card
-		if (currentCard > newCard) {
-			//Adds the card to dead cards and removes it from live cards
+		//Prints if the card is dead or not
+		if (takenCard > newCard) {
 			cout << " Dead" << endl << endl << endl;
-
-			deadCards.push_back(newCard);
-			removeElement(newCard, liveCards);
 			continue;
 		}
 		else {
 			cout << endl << endl;
 		}
+		
 
 		//Prompts the user to either take it or leave it
 		bool waiting = true;
@@ -56,15 +57,21 @@ int main() {
 			switch (userInput) {
 			case 't':
 			case 'T':
-				//Adds the card to the score and to the last knowledge
-				currentCard = newCard;
-				score += currentCard;
-				removeElement(currentCard, liveCards);
+				//Removes taken card and all cards below the and adds them to the dead cards
+				for (unsigned int i = 0; i < liveCards.size(); i++) {
+					if (liveCards.at(i) <= newCard) {
+						deadCards.push_back(liveCards.at(i));
+					}
+				}
+				
+				//Updates the card picked
+				takenCard = newCard;
+				score += takenCard;
 				waiting = false;
 				break;
 			case 'l':
 			case 'L':
-				//Adds the card to dead cards and removes it from the live cards
+				//Adds the left card to dead cards and removes it from the live cards
 				deadCards.push_back(newCard);
 				removeElement(newCard, liveCards);
 				waiting = false;
@@ -74,8 +81,13 @@ int main() {
 				waiting = true;
 			}
 		}
-		//Switches to new card for next round
-		cardIndex++;
+
+		//Updates the live cards by removing the new dead ones
+		if (tempSize < deadCards.size()) {
+			for (unsigned int i = tempSize; i < deadCards.size(); i++) {
+				removeElement(deadCards.at(i), liveCards);
+			}
+		}
 		cout << endl;
 	}
 	cout << "Final Score: " << score << endl;
